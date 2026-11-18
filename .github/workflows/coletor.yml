@@ -1,0 +1,41 @@
+# Coleta diária dos Insights do Instagram @dunkmidia -> planilha Dunk_Metricas.
+# Segredos necessários (Settings > Secrets and variables > Actions):
+#   META_TOKEN, IG_USER_ID, SHEET_ID, GOOGLE_SA_JSON (conteúdo do JSON, não o caminho)
+name: coletor
+
+on:
+  schedule:
+    - cron: "0 9 * * *"  # 06:00 em Brasília (UTC-3)
+  workflow_dispatch:      # botão "Run workflow" para rodar à mão
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coletor
+  cancel-in-progress: false
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: coletor/requirements.txt
+
+      - name: Instalar dependências
+        run: pip install -r coletor/requirements.txt
+
+      - name: Coletar e gravar na planilha
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+          PYTHONIOENCODING: utf-8
+        run: python coletor/instagram.py
