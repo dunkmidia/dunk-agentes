@@ -4,7 +4,7 @@ Agentes de marketing da **Dunk**. Regras, marca e arquitetura: ver [`CLAUDE.md`]
 
 | Módulo | Pasta | Status |
 |---|---|---|
-| Coletor (Insights do @dunkmidia → planilha `Dunk_Metricas`) | `coletor/` | Etapa 2 — não iniciado |
+| Coletor (Insights do @dunkmidia → planilha `Dunk_Metricas`) | `coletor/` | Etapa 2 — coletor pronto; falta agendar |
 | Fábrica de Posts v0 (pauta → carrossel PNG → checagem) | `fabrica/` | Etapa 3 — não iniciado |
 
 Nada é publicado, pausado ou alterado automaticamente. Quem publica é um humano.
@@ -30,7 +30,21 @@ Requer Python 3.11+.
 
 Nunca coloque token, chave ou JSON de credencial em arquivo versionado. O `.gitignore` bloqueia `.env`, `credenciais/` e qualquer `*.json`.
 
+## Coletor (Etapa 2)
+
+```powershell
+.\.venv\Scripts\python coletor\teste_token.py            # confere token, página e IG_USER_ID
+.\.venv\Scripts\python coletor\instagram.py --seco --limite 3   # só imprime, não grava
+.\.venv\Scripts\python coletor\instagram.py               # coleta tudo e grava na planilha
+```
+
+- Grava na aba `posts` de `Dunk_Metricas` (chave `post_id`: atualiza se existe, acrescenta se é novo; nunca apaga) e registra cada execução na aba `log`.
+- Métricas (Graph API v27.0): imagem e carrossel = alcance, visualizações, compartilhamentos, salvamentos, curtidas, comentários, interações totais, visitas ao perfil, seguidores ganhos; Reels = as mesmas sem visitas/seguidores (a API não oferece) + tempo médio assistido (s).
+- `envios_por_alcance` = compartilhamentos ÷ alcance. `serie` vem da tag `#serie_<nome>` na legenda; sem tag, a célula não é alterada (pode preencher à mão).
+- A planilha precisa estar compartilhada como Editor com a conta de serviço `coletor@dunk-agentes.iam.gserviceaccount.com`.
+
 ## O que falta
 
-- [ ] Etapa 2: `coletor/instagram.py` (após ler a doc atual da Instagram Graph API), gravação na planilha, `.github/workflows/coletor.yml`, teste com 3 posts reais comparando com o app.
+- [x] Etapa 2: `coletor/instagram.py` com gravação na planilha.
+- [ ] Etapa 2: comparar os 3 posts com o app do Instagram; `.github/workflows/coletor.yml` (agendamento diário).
 - [ ] Etapa 3: templates HTML 1080×1350 em `fabrica/templates/`, `gerar.py`, `checar.py`.
