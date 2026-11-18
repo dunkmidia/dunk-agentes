@@ -1,0 +1,17 @@
+# Segredos (CLAUDE.md §2) — nunca versionar
+.env
+.env.*
+!.env.example
+
+# Qualquer JSON pode ser credencial (conta de serviço Google etc.).
+# Se precisar versionar um JSON legítimo, abra exceção explícita: !caminho/arquivo.json
+*.json
+credenciais/
+
+# Saída gerada (vai para o Drive)
+saida/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
