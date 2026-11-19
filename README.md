@@ -42,6 +42,7 @@ Nunca coloque token, chave ou JSON de credencial em arquivo versionado. O `.giti
 - Métricas (Graph API v27.0): imagem e carrossel = alcance, visualizações, compartilhamentos, salvamentos, curtidas, comentários, interações totais, visitas ao perfil, seguidores ganhos; Reels = as mesmas sem visitas/seguidores (a API não oferece) + tempo médio assistido (s).
 - `envios_por_alcance` = compartilhamentos ÷ alcance (vazio se alcance = 0).
 - `serie` vem da tag `#serie_<nome>` na legenda (gravada em minúsculas). Sem tag, a célula **nunca** é alterada: série preenchida à mão é preservada. Com tag, a tag prevalece.
+  - Como funciona: `montar_linha` só inclui `serie` no dict quando há tag, e `gravar_posts` atualiza linhas existentes célula a célula, apenas com as chaves presentes (o mesmo vale para métricas que a API não devolveu). Conferido em 18/11/2026 com planilha simulada: duas execuções seguidas mantiveram a série manual e atualizaram as métricas.
 
 ### Agendamento (GitHub Actions)
 
