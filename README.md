@@ -70,7 +70,7 @@ Lê a aba `posts` (nunca a API) e faz a leitura da semana com regras fixas, sem 
 
 Grupo com menos de 5 posts sai marcado **amostra pequena**: não tire conclusão dele. Os alertas são heurísticos (há falso positivo); a conferência é humana.
 
-**Quando roda:** `.github/workflows/analista.yml`, toda segunda às 07:00 de Brasília (`cron: 0 10 * * 1`, 1 h depois da coleta), sobre a **última semana completa (segunda a domingo)**. Também roda à mão em **Actions > analista > Run workflow**. Usa os mesmos 4 secrets do coletor. Falha = execução vermelha + e-mail do GitHub.
+**Quando roda:** `.github/workflows/analista.yml`, toda segunda às 07:00 de Brasília (`cron: 0 10 * * 1`, 1 h depois da coleta), sobre a **última semana completa (segunda a domingo)**. Também roda à mão em **Actions > analista > Run workflow**. Usa só 2 dos secrets do coletor: `SHEET_ID` e `GOOGLE_SA_JSON` (não acessa a Meta). Falha = execução vermelha + e-mail do GitHub.
 
 **O que grava** (na planilha `Dunk_Metricas`; nunca apaga nada):
 

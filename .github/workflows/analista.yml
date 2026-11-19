@@ -1,7 +1,7 @@
 # Analista semanal: lê a aba posts de Dunk_Metricas e grava as abas semanal e alertas
 # + resumo na página da execução. Semana = última semana completa (segunda a domingo).
-# Segredos (os mesmos do coletor; Settings > Secrets and variables > Actions):
-#   META_TOKEN, IG_USER_ID, SHEET_ID, GOOGLE_SA_JSON (conteúdo do JSON, não o caminho)
+# Segredos (já cadastrados para o coletor; Settings > Secrets and variables > Actions):
+#   SHEET_ID, GOOGLE_SA_JSON (conteúdo do JSON, não o caminho). Não usa a Meta: sem META_TOKEN.
 name: analista
 
 on:
@@ -34,8 +34,6 @@ jobs:
 
       - name: Analisar a semana e gravar na planilha
         env:
-          META_TOKEN: ${{ secrets.META_TOKEN }}
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
           SHEET_ID: ${{ secrets.SHEET_ID }}
           GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
           PYTHONIOENCODING: utf-8
