@@ -4,7 +4,7 @@ Agentes de marketing da **Dunk**. Regras, marca e arquitetura: ver [`CLAUDE.md`]
 
 | Módulo | Pasta | Status |
 |---|---|---|
-| Coletor (Insights do @dunkmidia → planilha `Dunk_Metricas`) | `coletor/` | Etapa 2 — coletor pronto; falta agendar |
+| Coletor (Insights do @dunkmidia → planilha `Dunk_Metricas`) | `coletor/` | Etapa 2 — concluída; roda todo dia às 06:00 |
 | Fábrica de Posts v0 (pauta → carrossel PNG → checagem) | `fabrica/` | Etapa 3 — não iniciado |
 
 Nada é publicado, pausado ou alterado automaticamente. Quem publica é um humano.
@@ -40,11 +40,19 @@ Nunca coloque token, chave ou JSON de credencial em arquivo versionado. O `.giti
 
 - Grava na aba `posts` de `Dunk_Metricas` (chave `post_id`: atualiza se existe, acrescenta se é novo; nunca apaga) e registra cada execução na aba `log`.
 - Métricas (Graph API v27.0): imagem e carrossel = alcance, visualizações, compartilhamentos, salvamentos, curtidas, comentários, interações totais, visitas ao perfil, seguidores ganhos; Reels = as mesmas sem visitas/seguidores (a API não oferece) + tempo médio assistido (s).
-- `envios_por_alcance` = compartilhamentos ÷ alcance. `serie` vem da tag `#serie_<nome>` na legenda; sem tag, a célula não é alterada (pode preencher à mão).
+- `envios_por_alcance` = compartilhamentos ÷ alcance (vazio se alcance = 0).
+- `serie` vem da tag `#serie_<nome>` na legenda (gravada em minúsculas). Sem tag, a célula **nunca** é alterada: série preenchida à mão é preservada. Com tag, a tag prevalece.
+
+### Agendamento (GitHub Actions)
+
+- `.github/workflows/coletor.yml` roda todo dia às 06:00 de Brasília (`cron: 0 9 * * *`) e também à mão em **Actions > coletor > Run workflow**.
+- Secrets do repositório (Settings > Secrets and variables > Actions > **Repository secrets**): `META_TOKEN` (só o valor, sem `META_TOKEN=` nem aspas), `IG_USER_ID`, `SHEET_ID`, `GOOGLE_SA_JSON` (**conteúdo** do JSON, não o caminho).
+- Falha: execução vermelha + e-mail do GitHub; o motivo fica na aba `log`. Erro 190 "Malformed access token" = segredo colado errado; 190 sem "Malformed" = token expirado/revogado.
+- Token do usuário de sistema "coletor" gerado com validade **Nunca**.
 - A planilha precisa estar compartilhada como Editor com a conta de serviço `coletor@dunk-agentes.iam.gserviceaccount.com`.
 
 ## O que falta
 
-- [x] Etapa 2: `coletor/instagram.py` com gravação na planilha.
-- [ ] Etapa 2: comparar os 3 posts com o app do Instagram; `.github/workflows/coletor.yml` (agendamento diário).
+- [x] Etapa 2: `coletor/instagram.py`, gravação na planilha, conferência de 3 posts com o app (18/11/2026), agendamento diário no GitHub Actions (1ª execução verde em 18/11/2026).
+- [ ] Preencher à mão a coluna `serie` dos posts antigos (sem tag `#serie_`).
 - [ ] Etapa 3: templates HTML 1080×1350 em `fabrica/templates/`, `gerar.py`, `checar.py`.
