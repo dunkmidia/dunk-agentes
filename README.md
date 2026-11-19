@@ -5,6 +5,7 @@ Agentes de marketing da **Dunk**. Regras, marca e arquitetura: ver [`CLAUDE.md`]
 | Módulo | Pasta | Status |
 |---|---|---|
 | Coletor (Insights do @dunkmidia → planilha `Dunk_Metricas`) | `coletor/` | Etapa 2 — concluída; roda todo dia às 06:00 |
+| Analista semanal (opção A: regras fixas, sem IA) | `analista/` | Concluído; roda toda segunda às 07:00 |
 | Fábrica de Posts v0 (pauta → carrossel PNG → checagem) | `fabrica/` | Etapa 3 — não iniciado |
 
 Nada é publicado, pausado ou alterado automaticamente. Quem publica é um humano.
@@ -52,8 +53,49 @@ Nunca coloque token, chave ou JSON de credencial em arquivo versionado. O `.giti
 - Token do usuário de sistema "coletor" gerado com validade **Nunca**.
 - A planilha precisa estar compartilhada como Editor com a conta de serviço `coletor@dunk-agentes.iam.gserviceaccount.com`.
 
+## Analista semanal
+
+Lê a aba `posts` (nunca a API) e faz a leitura da semana com regras fixas, sem IA. Base: PRD do Analista Semanal (no Drive).
+
+**O que faz**
+
+1. Resumo da semana × semana anterior: posts, alcance (total, mediano e médio por post), visualizações, envios, salvamentos, comentários, visitas ao perfil, seguidores ganhos, com variação em %.
+2. Indicadores do doc 21 em 4 semanas: envios ÷ alcance e salvamentos ÷ alcance (meta ≥ 2%), no total e por série.
+3. Ranking: 3 melhores e 3 piores posts da semana por alcance (e por envios, se houver), com link.
+4. Alcance médio por formato (Reels, carrossel, imagem) em 4 semanas.
+5. Frequência: posts × meta de 6, dias com mais de 1 post, posts a menos de 2 h um do outro.
+6. Alertas:
+   - legenda: número sem `Fonte:` nem `EXEMPLO`, taxa anual a conferir ("80%, ano após ano"), palavra banida, mais de 5 hashtags, provável anotação interna, CTA "Siga para" (só conta), número sem substantivo e frase sem pontuação (indícios de texto truncado);
+   - frequência: dia com 3+ posts ou intervalo < 2 h; semana com mais de 6 posts.
+
+Grupo com menos de 5 posts sai marcado **amostra pequena**: não tire conclusão dele. Os alertas são heurísticos (há falso positivo); a conferência é humana.
+
+**Quando roda:** `.github/workflows/analista.yml`, toda segunda às 07:00 de Brasília (`cron: 0 10 * * 1`, 1 h depois da coleta), sobre a **última semana completa (segunda a domingo)**. Também roda à mão em **Actions > analista > Run workflow**. Usa os mesmos 4 secrets do coletor. Falha = execução vermelha + e-mail do GitHub.
+
+**O que grava** (na planilha `Dunk_Metricas`; nunca apaga nada):
+
+- Aba `semanal`: 1 linha por semana (chave `semana_inicio`), com os números do resumo, indicadores de 4 semanas, frequência e `alertas_da_semana`. Rodar de novo na mesma semana atualiza a linha em vez de duplicar.
+- Aba `alertas`: 1 linha por alerta (`data`, `post_id`, `link`, `tipo`, `nivel`, `regra`, `trecho`, `status`, `criado_em`). Níveis: `alerta` (provável erro), `conferir` (indício fraco), `contar` (só contagem).
+  - **Coluna `status`:** quem tratar o alerta escreve `ok` (falso positivo ou já resolvido) ou `corrigir`. O analista só acrescenta alertas novos (chave = post + regra + trecho) e nunca reescreve linha existente: o `status` preenchido à mão é preservado.
+  - Na 1ª execução (aba vazia) olha todos os posts; depois, só os da semana. Alerta de frequência só é gravado para dia/semana já encerrados.
+- Resumo da execução: o relatório inteiro aparece na página da execução no GitHub Actions (job summary).
+
+**Como rodar à mão**
+
+```powershell
+.\.venv\Scripts\python analista\semanal.py                     # última semana completa, só imprime
+.\.venv\Scripts\python analista\semanal.py --ate 2026-11-17    # 7 dias que terminam nessa data, só imprime
+.\.venv\Scripts\python analista\semanal.py --todos             # alertas sobre todos os posts
+.\.venv\Scripts\python analista\semanal.py --gravar            # grava nas abas semanal e alertas
+```
+
+Sem `--gravar`, nada é escrito. Com `--gravar`, `--ate` precisa ser um domingo.
+
 ## O que falta
 
 - [x] Etapa 2: `coletor/instagram.py`, gravação na planilha, conferência de 3 posts com o app (18/11/2026), agendamento diário no GitHub Actions (1ª execução verde em 18/11/2026).
+- [x] Analista semanal (pedidos A1–A4 do PRD): resumo, alertas, gravação nas abas `semanal` e `alertas` (1ª gravação local em 18/11/2026), agendamento às segundas.
+- [ ] Analista: teste final pelo Actions (Run workflow) e conferência dos critérios A1–A5 do PRD; o alerta de 5 posts em 17/11 entra na aba `alertas` na execução de 23/11/2026.
+- [ ] Definir quem trata os alertas toda segunda (PRD Q1).
 - [ ] Preencher à mão a coluna `serie` dos posts antigos (sem tag `#serie_`).
 - [ ] Etapa 3: templates HTML 1080×1350 em `fabrica/templates/`, `gerar.py`, `checar.py`.

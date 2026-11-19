@@ -1,0 +1,42 @@
+# Analista semanal: lê a aba posts de Dunk_Metricas e grava as abas semanal e alertas
+# + resumo na página da execução. Semana = última semana completa (segunda a domingo).
+# Segredos (os mesmos do coletor; Settings > Secrets and variables > Actions):
+#   META_TOKEN, IG_USER_ID, SHEET_ID, GOOGLE_SA_JSON (conteúdo do JSON, não o caminho)
+name: analista
+
+on:
+  schedule:
+    - cron: "0 10 * * 1"  # segunda 07:00 em Brasília (UTC-3), 1 h depois da coleta das 06:00
+  workflow_dispatch:       # botão "Run workflow" para rodar à mão
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analista
+  cancel-in-progress: false
+
+jobs:
+  analisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: coletor/requirements.txt
+
+      - name: Instalar dependências
+        run: pip install -r coletor/requirements.txt
+
+      - name: Analisar a semana e gravar na planilha
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+          PYTHONIOENCODING: utf-8
+        run: python analista/semanal.py --gravar

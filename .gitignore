@@ -11,6 +11,9 @@ credenciais/
 # Saída gerada (vai para o Drive)
 saida/
 
+# PRDs: a fonte da verdade é o Drive (PROJ_04_DUNK/Operação/Claude)
+PRD_ANALISTA_SEMANAL.md
+
 # Python
 __pycache__/
 *.pyc
